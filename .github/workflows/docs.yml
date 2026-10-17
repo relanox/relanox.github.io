@@ -35,14 +35,20 @@ jobs:
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version-file: go.mod
-      - run: go run ./tools/docs
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.14.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm docs:build
       - name: Record published source
         env:
           SOURCE_REVISION: ${{ steps.source.outputs.revision }}
-        run: printf '%s\n' "$SOURCE_REVISION" > docs/site/source-commit.txt
+        run: printf '%s\n' "$SOURCE_REVISION" > docs/.vitepress/dist/source-commit.txt
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: docs/site
+          path: docs/.vitepress/dist
 
   deploy:
     needs: build
